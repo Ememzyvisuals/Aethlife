@@ -1,0 +1,219 @@
+/* ============================================================
+   AethLife — Global Design System
+   Fonts: Clash Display (headings) + Sora (body)
+   Dark-first premium design
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Clash Display from Fontshare */
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap');
+
+@layer base {
+  :root {
+    /* Light mode */
+    --background: 0 0% 99%;
+    --foreground: 240 10% 6%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 6%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 6%;
+    --primary: 174 72% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 6% 93%;
+    --secondary-foreground: 240 10% 20%;
+    --muted: 240 5% 95%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 174 72% 38%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 174 72% 38%;
+    --radius: 0.75rem;
+    --surface: 240 6% 97%;
+  }
+
+  .dark {
+    /* Deep dark — #0B0B0F style */
+    --background: 240 20% 4%;
+    --foreground: 0 0% 95%;
+    --card: 240 15% 7%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 15% 7%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 174 72% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 10% 13%;
+    --secondary-foreground: 0 0% 85%;
+    --muted: 240 10% 11%;
+    --muted-foreground: 240 5% 52%;
+    --accent: 174 72% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 8% 14%;
+    --input: 240 10% 11%;
+    --ring: 174 72% 42%;
+    --surface: 240 15% 6%;
+  }
+}
+
+@layer base {
+  * { @apply border-border box-border; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Sora', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Clash Display', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  /* Selection */
+  ::selection {
+    background: #14b8a625;
+    color: #0d9488;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/40; }
+
+  /* Focus ring */
+  :focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+@layer utilities {
+  /* ── Typography ── */
+  .heading-xl  { @apply text-[2rem] font-bold leading-tight tracking-tight; font-family: 'Clash Display', sans-serif; }
+  .heading-lg  { @apply text-[1.5rem] font-semibold leading-snug tracking-tight; font-family: 'Clash Display', sans-serif; }
+  .heading-md  { @apply text-[1.2rem] font-semibold leading-snug; font-family: 'Clash Display', sans-serif; }
+  .body-lg     { @apply text-base leading-relaxed; font-family: 'Sora', sans-serif; }
+  .body-sm     { @apply text-sm leading-relaxed; font-family: 'Sora', sans-serif; }
+  .caption     { @apply text-xs text-muted-foreground leading-relaxed; }
+
+  /* ── Cards ── */
+  .aethlife-card {
+    @apply bg-card border border-border rounded-2xl p-5 transition-all duration-200;
+  }
+  .aethlife-card:hover {
+    @apply border-primary/20;
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.08), 0 4px 16px -4px hsl(var(--primary) / 0.06);
+  }
+
+  /* Subtle glass — no heavy blur overdone */
+  .glass {
+    backdrop-filter: blur(16px) saturate(140%);
+    background: hsl(var(--card) / 0.85);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  /* ── Gradients ── */
+  .gradient-teal {
+    background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  }
+  .gradient-teal-subtle {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.12) 0%, hsl(var(--primary) / 0.04) 100%);
+  }
+  .gradient-surface {
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface)) 100%);
+  }
+
+  /* ── Interactive states ── */
+  .press {
+    @apply active:scale-95 transition-transform duration-100;
+  }
+  .btn-primary {
+    @apply gradient-teal text-white font-semibold rounded-xl px-5 py-3 press;
+    @apply hover:brightness-110 transition-all duration-150;
+    font-family: 'Sora', sans-serif;
+  }
+  .btn-ghost {
+    @apply bg-transparent border border-border text-foreground rounded-xl px-5 py-3 press;
+    @apply hover:bg-muted transition-all duration-150;
+    font-family: 'Sora', sans-serif;
+  }
+
+  /* ── Page layout ── */
+  .page-header  { @apply mb-6; }
+  .page-title   { font-family: 'Clash Display', sans-serif; @apply text-2xl font-semibold text-foreground tracking-tight; }
+  .page-subtitle { font-family: 'Sora', sans-serif; @apply text-sm text-muted-foreground mt-1; }
+
+  /* ── Animations ── */
+  .animate-fade-up   { animation: fade-up 0.3s ease-out both; }
+  .animate-fade-in   { animation: fade-in 0.25s ease-out both; }
+  .animate-slide-up  { animation: slide-up 0.35s cubic-bezier(0.4,0,0.2,1) both; }
+
+  /* ── Shimmer skeleton ── */
+  .shimmer-bg {
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted-foreground)/0.08) 50%, hsl(var(--muted)) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* ── Noise texture overlay — subtle premium feel ── */
+  .noise::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* ── Status colors ── */
+  .status-success { @apply text-emerald-500 bg-emerald-500/10 border-emerald-500/20; }
+  .status-warning { @apply text-amber-500 bg-amber-500/10 border-amber-500/20; }
+  .status-error   { @apply text-red-500 bg-red-500/10 border-red-500/20; }
+  .status-info    { @apply text-blue-500 bg-blue-500/10 border-blue-500/20; }
+}
+
+/* ── Keyframes ── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+
+/* ── PWA safe areas ── */
+@supports (padding: env(safe-area-inset-top)) {
+  .safe-top    { padding-top: env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* ── Sonner toast overrides — premium style ── */
+[data-sonner-toaster] [data-sonner-toast] {
+  font-family: 'Sora', sans-serif !important;
+  font-size: 13px !important;
+  border-radius: 14px !important;
+}

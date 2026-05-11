@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "vigorflow-app",
+    "production": "vigorflow-app"
+  }
+}
