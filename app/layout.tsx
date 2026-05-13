@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/shared/theme-provider';
 import { Toaster } from 'sonner';
 import { BRAND } from '@/lib/brand';
 import '@/styles/globals.css';
+import { PwaRegister } from '@/components/shared/pwa-register';
 
 const sora = Sora({
   subsets: ['latin'],
@@ -66,7 +67,7 @@ export const metadata: Metadata = {
   // ── Google Search Console verification ────────────────────────────────────
   // TODO: replace with your actual code from Search Console → HTML tag method
   verification: {
-    google: 'wv1kiSqlhdc7RJ1foB6FN9IGKHtz7LgJ8Zt4NRHrnGs',
+    google: 'PASTE_YOUR_GOOGLE_VERIFICATION_CODE_HERE',
   },
 
   // ── Open Graph (WhatsApp, Facebook, LinkedIn previews) ─────────────────────
@@ -96,13 +97,14 @@ export const metadata: Metadata = {
 
   // ── Icons ─────────────────────────────────────────────────────────────────
   icons: {
+    // Next.js auto-generates favicons from app/icon.tsx and app/apple-icon.tsx
+    // SVG fallback for browsers that don't support the auto-generated ones
     icon: [
-      { url: '/icons/icon-16x16.png',   sizes: '16x16',   type: 'image/png' },
-      { url: '/icons/icon-32x32.png',   sizes: '32x32',   type: 'image/png' },
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icons/icon.svg', type: 'image/svg+xml', sizes: 'any' },
     ],
-    apple:    [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
-    shortcut: '/favicon.ico',
+    apple:    [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
+    shortcut: '/favicon.svg',
   },
 
   // ── PWA ────────────────────────────────────────────────────────────────────
@@ -125,6 +127,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Clash Display from Fontshare — premium heading font */}
+        {/* Capture PWA install event BEFORE React mounts — critical for install prompt */}
+        <script
+          dangerouslySetInnerHTML={{ __html: `
+            window.__pwaInstallEvent = null;
+            window.addEventListener('beforeinstallprompt', function(e) {
+              e.preventDefault();
+              window.__pwaInstallEvent = e;
+              window.dispatchEvent(new Event('pwa-install-ready'));
+            });
+          `}}
+        />
+
         {/* Clash Display — preconnect + preload for fastest render */}
         <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://api.fontshare.com" />
@@ -161,6 +175,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${sora.variable} antialiased`} style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          <PwaRegister />
           {children}
           <Toaster
             position="bottom-center"

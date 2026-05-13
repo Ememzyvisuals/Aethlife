@@ -56,21 +56,27 @@ export default function SettingsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setIsLoading(false); return; }
 
-      const [{ data: profile }, { data: onboarding }] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', user.id).single(),
-        supabase.from('onboarding_preferences').select('notification_preferences').eq('user_id', user.id).single(),
-      ]);
+        const [{ data: profile }, { data: onboarding }] = await Promise.all([
+          supabase.from('profiles').select('*').eq('user_id', user.id).single(),
+          supabase.from('onboarding_preferences').select('notification_preferences').eq('user_id', user.id).single(),
+        ]);
 
-      if (profile) {
-        reset({ full_name: profile.full_name ?? '', timezone: profile.timezone, currency: profile.currency as Currency });
+        if (profile) {
+          reset({ full_name: profile.full_name ?? '', timezone: profile.timezone ?? 'Africa/Lagos', currency: (profile.currency ?? 'NGN') as Currency });
+        }
+        if (onboarding?.notification_preferences) {
+          setNotifPrefs(onboarding.notification_preferences as NotificationPreferences);
+        }
+      } catch (err) {
+        console.error('[AethLife] Settings load error:', err);
+        toast.error('Could not load settings. Please refresh.');
+      } finally {
+        setIsLoading(false);
       }
-      if (onboarding?.notification_preferences) {
-        setNotifPrefs(onboarding.notification_preferences as NotificationPreferences);
-      }
-      setIsLoading(false);
     }
     load();
   }, []);
@@ -113,7 +119,18 @@ export default function SettingsPage() {
   }
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 text-teal-500 animate-spin" /></div>;
+    return (
+      <div className="space-y-5 max-w-xl animate-pulse">
+        <div className="h-7 bg-muted rounded-xl w-32" />
+        {[1,2,3,4].map(i => (
+          <div key={i} className="rounded-2xl border border-border p-5 space-y-3">
+            <div className="h-5 bg-muted rounded-lg w-40" />
+            <div className="h-10 bg-muted rounded-xl" />
+            <div className="h-10 bg-muted rounded-xl" />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (

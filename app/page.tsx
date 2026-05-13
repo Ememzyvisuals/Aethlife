@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Logo } from '@/components/shared/logo';
-import { ArrowRight, Brain, Dumbbell, Wallet, CheckSquare, Zap, Shield, BarChart3, Sparkles } from 'lucide-react';
+import { ArrowRight, Brain, Dumbbell, Wallet, CheckSquare, Zap, Shield, BarChart3 } from 'lucide-react';
 import { BRAND } from '@/lib/brand';
 
 export const metadata = {
@@ -62,17 +62,7 @@ function Step({ n, title, desc }: { n: number; title: string; desc: string }) {
   );
 }
 
-// ── Stat chip ─────────────────────────────────────────────────────────────────
-function StatChip({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="text-center">
-      <div className="text-2xl font-bold text-foreground" style={{ fontFamily: "'Clash Display', sans-serif" }}>
-        {value}
-      </div>
-      <div className="text-xs text-muted-foreground mt-0.5">{label}</div>
-    </div>
-  );
-}
+
 
 export default function LandingPage() {
   return (
@@ -133,12 +123,6 @@ export default function LandingPage() {
 
         {/* ── Hero ─────────────────────────────────────────────────── */}
         <section className="pt-20 pb-16 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/25 bg-primary/8 text-xs font-medium text-primary mb-8">
-            <Sparkles className="w-3.5 h-3.5" />
-            AI-powered life tracking
-          </div>
-
           {/* Headline */}
           <h1
             className="text-[2.8rem] sm:text-[3.5rem] font-bold text-foreground leading-[1.1] tracking-tight mb-6 max-w-3xl mx-auto"
@@ -163,11 +147,23 @@ export default function LandingPage() {
           <p className="text-xs text-muted-foreground mt-4">Free forever · Premium from ₦5,000/month</p>
         </section>
 
-        {/* ── Stats strip ──────────────────────────────────────────── */}
-        <section className="grid grid-cols-3 gap-6 max-w-sm mx-auto pb-16 border-b border-border">
-          <StatChip value="4-in-1" label="All in one app" />
-          <StatChip value="100%" label="Private & secure" />
-          <StatChip value="AI" label="Powered insights" />
+        {/* ── Feature pills ────────────────────────────────────────── */}
+        <section className="flex flex-wrap items-center justify-center gap-2 pb-16 border-b border-border">
+          {[
+            'Fitness tracking',
+            'Expense tracking',
+            'Habit builder',
+            'AI insights',
+            'Receipt scanning',
+            'NGN support',
+          ].map(f => (
+            <span
+              key={f}
+              className="text-xs font-medium px-3 py-1.5 rounded-full border border-border text-muted-foreground bg-muted/40"
+            >
+              {f}
+            </span>
+          ))}
         </section>
 
         {/* ── Features ─────────────────────────────────────────────── */}

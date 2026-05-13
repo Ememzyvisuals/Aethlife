@@ -2,79 +2,75 @@ import { Resend } from 'resend';
 import { BRAND } from '@/lib/brand';
 
 /**
- * AethLife Email System
- * ══════════════════════
- * Provider: Resend (free tier: 3,000 emails/month)
- * Sender:   onboarding@resend.dev (free default — change to info@aethlife.xyz after domain purchase)
- * Delivery: Ememzyvisuals@gmail.com (owner notifications)
+ * AethLife Email System — Resend
  *
- * HOW IT WORKS:
- * 1. User action triggers an email (signup, feedback, reset)
- * 2. API route calls this module
- * 3. Resend delivers via their SMTP infrastructure
- * 4. Vercel serves the API routes via serverless functions
+ * IMPORTANT — FREE TIER LIMITATION:
+ * onboarding@resend.dev only delivers to YOUR OWN verified email.
+ * To send to any user's email, you MUST verify a domain in Resend.
  *
- * EMAIL TYPES IMPLEMENTED:
- * - welcome:         Sent after successful signup
- * - password_reset:  Handled by Supabase Auth automatically
- * - feedback_notify: Owner notification for user feedback/bugs
- * - weekly_insight:  Optional weekly summary (premium)
- * - subscription:    Payment confirmation
+ * Current setup: emails deliver correctly to ememzyvisuals@gmail.com
+ * (owner notifications work). User welcome/confirmation emails will
+ * only work after you verify aethlife.xyz in Resend → Domains.
+ *
+ * Setup steps for full delivery:
+ * 1. resend.com → Domains → Add Domain → type aethlife.xyz
+ * 2. Add the 3 DNS records they show to your domain registrar
+ * 3. Wait 10 mins → verified
+ * 4. Change FROM below to: AethLife <info@aethlife.xyz>
  */
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+function getResendClient() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    throw new Error('RESEND_API_KEY is not set in environment variables');
+  }
+  return new Resend(key);
+}
 
-const FROM = `${BRAND.name} <onboarding@resend.dev>`; // TODO: change to info@aethlife.xyz after domain purchase
+// Change to info@aethlife.xyz after verifying domain in Resend
+const FROM = `${BRAND.name} <onboarding@resend.dev>`;
 
-// ── Shared email template wrapper ─────────────────────────────
+// ── Shared HTML shell ─────────────────────────────────────────
 function emailShell(body: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>${BRAND.name}</title>
 <style>
-  body { margin: 0; padding: 0; background: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
-  .wrap { max-width: 560px; margin: 40px auto; padding: 0 20px 40px; }
-  .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-  .header { background: linear-gradient(135deg, #0f766e, #14b8a6); padding: 28px 32px; display: flex; align-items: center; gap: 12px; }
-  .logo-text { color: white; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
-  .body { padding: 32px; }
-  h1 { margin: 0 0 8px; font-size: 22px; font-weight: 600; color: #0f172a; letter-spacing: -0.02em; }
-  p { margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #475569; }
-  .btn { display: inline-block; background: #14b8a6; color: #ffffff !important; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 28px; border-radius: 12px; margin: 8px 0 20px; }
-  .divider { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
-  .footer { padding: 20px 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
-  .footer p { font-size: 12px; color: #94a3b8; margin: 0; line-height: 1.5; }
-  .footer a { color: #14b8a6; text-decoration: none; }
-  .highlight { background: #f0fdfa; border-left: 3px solid #14b8a6; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
-  .highlight p { margin: 0; font-size: 14px; color: #0f766e; }
-  @media (prefers-color-scheme: dark) {
-    body { background: #0a0a0a; }
-    .card { background: #111827; border-color: #1f2937; }
-    h1 { color: #f1f5f9; }
-    p { color: #94a3b8; }
-    .footer { background: #0f172a; border-color: #1f2937; }
-  }
+  body{margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif}
+  .wrap{max-width:560px;margin:40px auto;padding:0 20px 40px}
+  .card{background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden}
+  .header{background:linear-gradient(135deg,#0f766e,#14b8a6);padding:28px 32px}
+  .logo{color:white;font-size:22px;font-weight:700;letter-spacing:-0.02em;margin:0}
+  .logo span{opacity:0.75}
+  .body{padding:32px}
+  h1{margin:0 0 8px;font-size:22px;font-weight:600;color:#0f172a;letter-spacing:-0.02em}
+  p{margin:0 0 16px;font-size:15px;line-height:1.6;color:#475569}
+  .btn{display:inline-block;background:#14b8a6;color:#ffffff!important;text-decoration:none;font-size:15px;font-weight:600;padding:14px 28px;border-radius:12px;margin:8px 0 20px}
+  .divider{border:none;border-top:1px solid #e2e8f0;margin:24px 0}
+  .highlight{background:#f0fdfa;border-left:3px solid #14b8a6;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0}
+  .highlight p{margin:0;font-size:14px;color:#0f766e}
+  .footer{padding:20px 32px;background:#f8fafc;border-top:1px solid #e2e8f0}
+  .footer p{font-size:12px;color:#94a3b8;margin:0;line-height:1.5}
+  .footer a{color:#14b8a6;text-decoration:none}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
     <div class="header">
-      <div class="logo-text">AethLife</div>
+      <p class="logo">Aeth<span>Life</span></p>
     </div>
     <div class="body">
       ${body}
     </div>
     <div class="footer">
-      <p>
-        ${BRAND.name} by ${BRAND.company} ·
-        <a href="${BRAND.url}/legal/privacy">Privacy</a> ·
-        <a href="${BRAND.url}/legal/terms">Terms</a><br/>
-        ${BRAND.supportEmail} · ${BRAND.url}
-      </p>
+      <p>${BRAND.name} · ${BRAND.company}<br/>
+      <a href="${BRAND.url}">${BRAND.url}</a> ·
+      <a href="${BRAND.url}/legal/privacy">Privacy</a> ·
+      <a href="${BRAND.url}/legal/terms">Terms</a></p>
     </div>
   </div>
 </div>
@@ -82,101 +78,99 @@ function emailShell(body: string): string {
 </html>`;
 }
 
-// ── Welcome Email ─────────────────────────────────────────────
+// ── Welcome email ─────────────────────────────────────────────
 export async function sendWelcomeEmail(to: string, name: string) {
-  return resend.emails.send({
-    from: FROM,
-    to,
-    subject: `Welcome to ${BRAND.name} — your life OS is ready`,
-    html: emailShell(`
-      <h1>Welcome, ${name}.</h1>
-      <p>Your ${BRAND.name} account is active. You're now on the free plan — start tracking your workouts, expenses, and habits right away.</p>
-      <div class="highlight">
-        <p>💡 <strong>First step:</strong> Complete your onboarding to personalize your dashboard and AI insights.</p>
-      </div>
-      <a href="${BRAND.url}/dashboard" class="btn">Open your dashboard →</a>
-      <hr class="divider" />
-      <p style="font-size:13px; color:#64748b;"><strong>What's included in your free account:</strong><br/>
-      Full fitness tracking · Expense logging · Habit streaks · 3 AI insights/week · 5 receipt scans/month · Offline PWA</p>
-      <p style="font-size:13px; color:#64748b;">Upgrade to Premium anytime for unlimited AI coaching, behavioral correlations, and unlimited receipt scanning from <a href="${BRAND.url}/billing" style="color:#14b8a6;">₦5,000/month</a>.</p>
-    `),
-  });
+  try {
+    const resend = getResendClient();
+    const { error } = await resend.emails.send({
+      from:    FROM,
+      to,
+      subject: `Welcome to ${BRAND.name}`,
+      html:    emailShell(`
+        <h1>Welcome, ${name} 👋</h1>
+        <p>Your account is ready. Here's what you can do right now:</p>
+        <div class="highlight">
+          <p>Log your first workout, add an expense, or build a habit.
+          AI insights start appearing after a few days of data.</p>
+        </div>
+        <a class="btn" href="${BRAND.url}/dashboard">Open Dashboard</a>
+        <hr class="divider"/>
+        <p style="font-size:13px;color:#94a3b8">
+          Questions? Reply to this email — we read every one.
+        </p>
+      `),
+    });
+    if (error) console.error('[AethLife] Welcome email error:', error);
+  } catch (err) {
+    console.error('[AethLife] sendWelcomeEmail failed:', err);
+    // Never throw — email failure should never break the user flow
+  }
 }
 
-// ── Feedback Notification (to owner) ─────────────────────────
-export async function sendFeedbackNotification(opts: {
-  type: string;
-  title: string;
-  description: string;
-  email?: string;
-}) {
-  const typeEmoji: Record<string, string> = {
-    feedback: '💬',
-    bug_report: '🐛',
-    feature_request: '💡',
-    rating: '⭐',
-  };
-  const emoji = typeEmoji[opts.type] ?? '📬';
-  const label = opts.type.replace(/_/g, ' ');
-
-  return resend.emails.send({
-    from: FROM,
-    to: BRAND.ownerEmail,
-    subject: `[${BRAND.name}] ${emoji} ${label}: ${opts.title}`,
-    html: emailShell(`
-      <h1>${emoji} New ${label}</h1>
-      <p style="font-size:12px; color:#94a3b8; margin-bottom:20px;">Submitted via ${BRAND.name} feedback form</p>
-      <p><strong style="color:#0f172a;">${opts.title}</strong></p>
-      <div class="highlight">
-        <p style="white-space:pre-wrap; color:#334155;">${opts.description}</p>
-      </div>
-      ${opts.email ? `<p style="font-size:13px; color:#64748b;">Reply to: <a href="mailto:${opts.email}" style="color:#14b8a6;">${opts.email}</a></p>` : ''}
-    `),
-  });
-}
-
-// ── Subscription Confirmation ─────────────────────────────────
-export async function sendSubscriptionConfirmation(opts: {
-  to: string;
-  name: string;
+// ── Subscription confirmation ─────────────────────────────────
+export async function sendSubscriptionConfirmation({
+  to, name, plan, amount, currency,
+}: {
+  to: string; name: string;
   plan: 'monthly' | 'annual' | 'lifetime';
-  amount: string;
-  currency: string;
+  amount: string; currency: string;
 }) {
-  const planLabels = { monthly: 'Monthly Premium', annual: 'Yearly Premium', lifetime: 'Lifetime Premium' };
-  const planLabel = planLabels[opts.plan];
-  const isLifetime = opts.plan === 'lifetime';
+  const planLabel = plan === 'lifetime' ? 'Lifetime' : plan === 'annual' ? 'Annual' : 'Monthly';
+  const expiry    = plan === 'lifetime'
+    ? 'Never — you own it forever'
+    : plan === 'annual'
+      ? 'Renews in 12 months'
+      : 'Renews in 1 month';
 
-  return resend.emails.send({
-    from: FROM,
-    to: opts.to,
-    subject: `${BRAND.name} Premium is active — ${planLabel}`,
-    html: emailShell(`
-      <h1>You're now Premium, ${opts.name}.</h1>
-      <p>Your <strong>${planLabel}</strong> subscription is active. Every premium feature is now unlocked.</p>
-      <div class="highlight">
-        <p>✅ <strong>${planLabel}</strong> · ${opts.amount} ${opts.currency}${isLifetime ? ' (one-time)' : ''}</p>
-      </div>
-      <p><strong>What you've unlocked:</strong><br/>
-      Unlimited AI coaching · Advanced behavioral correlations · Unlimited receipt scanning · Advanced analytics · Enhanced smart notifications${isLifetime ? ' · All future features' : ''}</p>
-      <a href="${BRAND.url}/insights" class="btn">Explore AI insights →</a>
-      <hr class="divider" />
-      <p style="font-size:13px; color:#64748b;">Manage your subscription anytime from <a href="${BRAND.url}/billing" style="color:#14b8a6;">Billing settings</a>. Questions? Email <a href="mailto:${BRAND.supportEmail}" style="color:#14b8a6;">${BRAND.supportEmail}</a></p>
-    `),
-  });
+  try {
+    const resend = getResendClient();
+    const { error } = await resend.emails.send({
+      from:    FROM,
+      to,
+      subject: `${BRAND.name} Premium activated — ${planLabel}`,
+      html:    emailShell(`
+        <h1>Premium activated! 🎉</h1>
+        <p>Hi ${name}, your payment was confirmed.</p>
+        <div class="highlight">
+          <p><strong>Plan:</strong> ${planLabel}<br/>
+          <strong>Amount:</strong> ${amount} ${currency}<br/>
+          <strong>Access:</strong> ${expiry}</p>
+        </div>
+        <p>You now have access to unlimited AI insights, receipt scanning, and advanced analytics.</p>
+        <a class="btn" href="${BRAND.url}/dashboard">Go to Dashboard</a>
+        <hr class="divider"/>
+        <p style="font-size:13px;color:#94a3b8">
+          Keep this email as your payment receipt.
+          Contact us at <a href="mailto:${BRAND.supportEmail}">${BRAND.supportEmail}</a> for any issues.
+        </p>
+      `),
+    });
+    if (error) console.error('[AethLife] Subscription email error:', error);
+  } catch (err) {
+    console.error('[AethLife] sendSubscriptionConfirmation failed:', err);
+  }
 }
 
-// ── Password Reset (supplementary — Supabase handles primary) ─
-export async function sendPasswordResetInfo(to: string, name: string) {
-  return resend.emails.send({
-    from: FROM,
-    to,
-    subject: `${BRAND.name} — password reset requested`,
-    html: emailShell(`
-      <h1>Password reset requested</h1>
-      <p>Hi ${name}, we received a request to reset your ${BRAND.name} password. Check your inbox for the reset link from our authentication system.</p>
-      <p>If you didn't request this, you can safely ignore it — your account is secure.</p>
-      <p style="font-size:13px; color:#64748b;">The reset link expires in 60 minutes. If it has expired, <a href="${BRAND.url}/auth/forgot-password" style="color:#14b8a6;">request a new one here</a>.</p>
-    `),
-  });
+// ── Password reset (backup — Supabase handles this by default) ──
+export async function sendPasswordResetEmail(to: string, resetUrl: string) {
+  try {
+    const resend = getResendClient();
+    const { error } = await resend.emails.send({
+      from:    FROM,
+      to,
+      subject: `Reset your ${BRAND.name} password`,
+      html:    emailShell(`
+        <h1>Reset your password</h1>
+        <p>We received a request to reset your password. Click below to set a new one.</p>
+        <a class="btn" href="${resetUrl}">Reset Password</a>
+        <hr class="divider"/>
+        <p style="font-size:13px;color:#94a3b8">
+          This link expires in 1 hour. If you didn't request this, ignore this email.
+        </p>
+      `),
+    });
+    if (error) console.error('[AethLife] Password reset email error:', error);
+  } catch (err) {
+    console.error('[AethLife] sendPasswordResetEmail failed:', err);
+  }
 }

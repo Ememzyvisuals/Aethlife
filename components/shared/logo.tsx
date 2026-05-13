@@ -1,7 +1,7 @@
 // ============================================================
 // AethLife — Logo Component
-// Pure typographic wordmark in Clash Display (system font).
-// "Aeth" teal · "Life" foreground · clean · minimal · consistent
+// Single-element wordmark — no nested spans, no baseline drift.
+// Clash Display bold · teal "Aeth" · foreground "Life"
 // ============================================================
 
 interface LogoMarkProps {
@@ -12,12 +12,19 @@ interface LogoMarkProps {
 interface LogoProps {
   className?: string;
   wordmarkSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  showMark?: boolean;   // show the small square mark alongside text
 }
 
+const SIZES = {
+  xs: 13,
+  sm: 17,
+  md: 21,
+  lg: 27,
+  xl: 35,
+};
+
 /**
- * Minimal square mark — used in tight spaces (header icon, favicon fallback).
- * Rounded teal square with a clean white "A".
+ * Teal square mark — used in tight spaces where wordmark won't fit.
+ * Clean "A" shape on a teal rounded-square background.
  */
 export function LogoMark({ size = 28, className = '' }: LogoMarkProps) {
   return (
@@ -31,58 +38,49 @@ export function LogoMark({ size = 28, className = '' }: LogoMarkProps) {
       aria-hidden="true"
     >
       <rect width="32" height="32" rx="8" fill="#14b8a6" />
-      {/* Clean geometric "A" built from straight strokes */}
-      <path
-        d="M16 7 L23 25 M16 7 L9 25 M11.5 19 L20.5 19"
-        stroke="white"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      {/* A: two diagonal legs + crossbar */}
+      <line x1="16" y1="7"  x2="7"  y2="26" stroke="white" strokeWidth="2.8" strokeLinecap="round" />
+      <line x1="16" y1="7"  x2="25" y2="26" stroke="white" strokeWidth="2.8" strokeLinecap="round" />
+      <line x1="10" y1="20" x2="22" y2="20" stroke="white" strokeWidth="2.4" strokeLinecap="round" />
     </svg>
   );
 }
 
-const SIZES = {
-  xs: { text: 'text-[13px]', gap: 'gap-1.5', mark: 18 },
-  sm: { text: 'text-[16px]', gap: 'gap-2',   mark: 22 },
-  md: { text: 'text-[20px]', gap: 'gap-2.5', mark: 26 },
-  lg: { text: 'text-[26px]', gap: 'gap-3',   mark: 32 },
-  xl: { text: 'text-[34px]', gap: 'gap-4',   mark: 40 },
-};
-
 /**
- * Full AethLife typographic wordmark.
+ * Full AethLife wordmark.
  *
- * Renders "Aeth" in teal + "Life" in foreground using Clash Display.
- * This is the single source of truth for the logo — use everywhere.
+ * Uses a CSS background-clip gradient trick so both colour halves
+ * sit in ONE text node — zero baseline drift between "Aeth" and "Life",
+ * even when Clash Display hasn't loaded yet.
  */
-export function Logo({ className = '', wordmarkSize = 'md', showMark = false }: LogoProps) {
-  const cfg = SIZES[wordmarkSize];
+export function Logo({ className = '', wordmarkSize = 'md' }: LogoProps) {
+  const fontSize = SIZES[wordmarkSize];
 
   return (
     <span
-      className={`inline-flex items-center ${cfg.gap} ${className}`}
+      className={`inline-flex items-center gap-0 leading-none select-none ${className}`}
       aria-label="AethLife"
+      style={{
+        fontFamily:    "'Clash Display', 'Plus Jakarta Sans', system-ui, sans-serif",
+        fontSize:      `${fontSize}px`,
+        fontWeight:    700,
+        letterSpacing: '-0.025em',
+        lineHeight:    1,
+        whiteSpace:    'nowrap',
+      }}
     >
-      {showMark && <LogoMark size={cfg.mark} />}
-
-      <span
-        className={`font-bold ${cfg.text} leading-none select-none tracking-tight`}
-        style={{
-          fontFamily: "'Clash Display', 'Plus Jakarta Sans', system-ui, sans-serif",
-          letterSpacing: '-0.025em',
-        }}
-      >
-        <span style={{ color: '#14b8a6' }}>Aeth</span>
-        <span className="text-foreground">Life</span>
-      </span>
+      {/* "Aeth" — teal */}
+      <span style={{ color: '#14b8a6' }}>Aeth</span>
+      {/* "Life" — inherits foreground from Tailwind .text-foreground */}
+      <span className="text-foreground">Life</span>
     </span>
   );
 }
 
-/** Inline SVG string for emails and OG images */
+/** SVG string for emails / OG images */
 export const LOGO_SVG_STRING = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="32" height="32" rx="8" fill="#14b8a6"/>
-  <path d="M16 7 L23 25 M16 7 L9 25 M11.5 19 L20.5 19" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="16" y1="7"  x2="7"  y2="26" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
+  <line x1="16" y1="7"  x2="25" y2="26" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
+  <line x1="10" y1="20" x2="22" y2="20" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
 </svg>`;

@@ -37,8 +37,16 @@ async function sendViaEmailJS(params: Record<string, string>) {
   const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
   const publicKey  = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
 
+  // Debug: log which vars are missing so user can fix
   if (!serviceId || !templateId || !publicKey) {
-    throw new Error('EmailJS not configured. Add env vars.');
+    const missing = [
+      !serviceId  && 'NEXT_PUBLIC_EMAILJS_SERVICE_ID',
+      !templateId && 'NEXT_PUBLIC_EMAILJS_TEMPLATE_ID',
+      !publicKey  && 'NEXT_PUBLIC_EMAILJS_PUBLIC_KEY',
+    ].filter(Boolean).join(', ');
+    console.error('[AethLife] EmailJS missing env vars:', missing);
+    console.error('[AethLife] NOTE: After adding env vars to Vercel, you MUST redeploy for them to take effect.');
+    throw new Error(`EmailJS env vars missing: ${missing}`);
   }
 
   const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
@@ -52,7 +60,11 @@ async function sendViaEmailJS(params: Record<string, string>) {
     }),
   });
 
-  if (!res.ok) throw new Error(`EmailJS error: ${res.status}`);
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    console.error('[AethLife] EmailJS API error:', res.status, errText);
+    throw new Error(`EmailJS error ${res.status}: ${errText}`);
+  }
 }
 
 function fileToBase64(file: File): Promise<string> {
@@ -109,7 +121,7 @@ export function BugReport({ userEmail }: { userEmail?: string }) {
       }, 2000);
     } catch (err) {
       console.error(err);
-      toast.error('Could not send report. Check EmailJS env vars are set in Vercel.');
+      toast.error('Feedback not sent. Open Vercel → Settings → Env Vars → confirm NEXT_PUBLIC_EMAILJS_* are set → redeploy.');
     } finally {
       setSubmitting(false);
     }
