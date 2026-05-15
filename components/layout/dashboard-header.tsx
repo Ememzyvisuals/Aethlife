@@ -42,9 +42,10 @@ export function DashboardHeader({ profile }: { profile: Profile | null }) {
   async function handleSignOut() {
     setMenuOpen(false);
     await supabase.auth.signOut();
-    router.push('/auth/login');
-    router.refresh();
-    toast.success('Signed out');
+    // Hard redirect — router.push can race with session clearing
+    // window.location.href forces a full page reload so middleware
+    // sees the cleared session and routes correctly
+    window.location.href = '/auth/login';
   }
 
   return (

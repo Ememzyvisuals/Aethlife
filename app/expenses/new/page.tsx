@@ -21,6 +21,20 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import type { ExpenseCategory, ReceiptData } from '@/types';
 
+// Fallback categories shown when Supabase returns empty
+// (happens when RLS blocks global user_id=null rows)
+const FALLBACK_CATEGORIES = [
+  { id: 'fallback-food',     name: 'Food & Dining',    color: '#f59e0b', icon: 'utensils'    },
+  { id: 'fallback-trans',    name: 'Transport',         color: '#3b82f6', icon: 'car'         },
+  { id: 'fallback-shop',     name: 'Shopping',          color: '#8b5cf6', icon: 'shopping-bag'},
+  { id: 'fallback-health',   name: 'Healthcare',        color: '#ef4444', icon: 'heart'       },
+  { id: 'fallback-bills',    name: 'Bills & Utilities', color: '#f97316', icon: 'zap'         },
+  { id: 'fallback-entertain',name: 'Entertainment',     color: '#14b8a6', icon: 'film'        },
+  { id: 'fallback-edu',      name: 'Education',         color: '#6366f1', icon: 'book'        },
+  { id: 'fallback-other',    name: 'Other',             color: '#94a3b8', icon: 'package'     },
+] as const;
+
+
 const expenseSchema = z.object({
   amount: z.number({ invalid_type_error: 'Enter a valid amount' }).positive('Amount must be greater than 0'),
   category_id: z.string().uuid('Select a category'),
@@ -59,14 +73,31 @@ function NewExpenseContent() {
 
   useEffect(() => {
     async function loadCategories() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase
-        .from('expense_categories')
-        .select('*')
-        .or(`user_id.is.null,user_id.eq.${user.id}`)
-        .order('name');
-      if (data) setCategories(data);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Try loading global + user categories
+        const { data, error } = await supabase
+          .from('expense_categories')
+          .select('id, name, color, icon')
+          .or(`user_id.is.null,user_id.eq.${user.id}`)
+          .order('name');
+
+        if (data && data.length > 0) {
+          setCategories(data as ExpenseCategory[]);
+        } else {
+          // RLS may be blocking user_id=null rows — use built-in defaults
+          // Run this SQL in Supabase to fix permanently:
+          // ALTER POLICY "Users can view own categories" ON expense_categories
+          //   USING (user_id IS NULL OR auth.uid() = user_id);
+          console.warn('[AethLife] No categories from Supabase — using fallbacks. Error:', error?.message);
+          setCategories(FALLBACK_CATEGORIES as unknown as ExpenseCategory[]);
+        }
+      } catch (err) {
+        console.error('[AethLife] loadCategories error:', err);
+        setCategories(FALLBACK_CATEGORIES as unknown as ExpenseCategory[]);
+      }
     }
     loadCategories();
   }, []);

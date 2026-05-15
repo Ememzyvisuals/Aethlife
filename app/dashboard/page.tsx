@@ -6,6 +6,29 @@ import { format, startOfMonth, endOfMonth, startOfWeek } from 'date-fns';
 
 export const metadata = { title: 'Dashboard' };
 
+
+// ── Static NGN/USD exchange rate (updated periodically) ─────
+// For live rates, use an exchange API when budget is saved
+const NGN_TO_USD = 0.00065;  // ~₦1,540 = $1 (approx May 2026)
+const USD_TO_NGN = 1540;
+
+function convertAmount(
+  amount: number,
+  fromCurrency: string,
+  toCurrency: string
+): number {
+  if (fromCurrency === toCurrency) return amount;
+  if (fromCurrency === 'NGN' && toCurrency === 'USD') return amount * NGN_TO_USD;
+  if (fromCurrency === 'USD' && toCurrency === 'NGN') return amount * USD_TO_NGN;
+  return amount;
+}
+
+function formatCurrency(amount: number, currency: string): string {
+  if (currency === 'NGN') return `₦${amount.toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
+  if (currency === 'USD') return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${currency} ${amount.toLocaleString()}`;
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
