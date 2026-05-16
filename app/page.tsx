@@ -66,7 +66,10 @@ function Step({ n, title, desc }: { n: number; title: string; desc: string }) {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div
+      className="min-h-screen bg-background"
+      style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+    >
 
 
       {/* Rich Results structured data for Google */}

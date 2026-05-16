@@ -4,7 +4,7 @@
   "description": "Connect your fitness, habits, finances, and energy. Get AI insights showing how every part of your life is connected.",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#0b0b0f",
+  "background_color": "#0b1315",
   "theme_color": "#14b8a6",
   "orientation": "portrait-primary",
   "scope": "/",

@@ -230,17 +230,33 @@ function BillingContent() {
         body: JSON.stringify({ plan: selected }),
       });
       const data = await res.json();
+
       if (!res.ok) {
+        // Error — reset loading so user can try again
         toast.error(data.error ?? 'Could not initiate payment. Please try again.');
+        setLoading(false);
         return;
       }
-      // Redirect to NOWPayments hosted payment page
-      window.location.href = data.checkoutUrl;
+
+      if (!data.checkoutUrl) {
+        toast.error('No payment URL received. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      // SUCCESS — show toast then redirect
+      // Do NOT call setLoading(false) here — keep spinner showing during redirect
+      // Calling it would trigger a React re-render that can cancel window.location navigation
+      toast.success('Redirecting to payment page…');
+      setTimeout(() => {
+        window.location.href = data.checkoutUrl;
+      }, 600);
+
     } catch {
       toast.error('Network error. Please check your connection and try again.');
-    } finally {
       setLoading(false);
     }
+    // No finally block — intentional. Loading stays true while redirecting.
   }
 
   function handlePromoSuccess() {
