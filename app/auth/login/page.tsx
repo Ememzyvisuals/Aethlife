@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
-import { LoginPage } from './login-form';
+import LoginForm from './login-form';
 
 export const metadata: Metadata = {
   title: 'Sign In',
-  description: 'Sign in to AethLife.',
+  description: 'Sign in to AethLife — your AI fitness, expense, and habit tracker.',
+  alternates: { canonical: 'https://aethlife.vercel.app/auth/login' },
 };
 
-export default function Page() {
-  return <LoginPage />;
+export default function LoginPage() {
+  return <LoginForm />;
 }
