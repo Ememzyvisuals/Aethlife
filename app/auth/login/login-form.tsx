@@ -188,7 +188,7 @@ function LoginForm() {
 }
 
 // ── Page export — wraps LoginForm in Suspense (required for useSearchParams) ──
-export function LoginForm() {
+export function Loginpage() {
   return (
     <Suspense fallback={
       <div className="animate-pulse space-y-4">
@@ -205,4 +205,3 @@ export function LoginForm() {
   );
 }
 
-export default LoginForm;
