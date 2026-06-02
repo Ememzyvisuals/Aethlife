@@ -1,16 +1,15 @@
 import type { Metadata } from 'next';
-import { LoginForm } from './login-form';
+
+// Default import — works regardless of what the function is named inside
+// login-form.tsx (LoginForm OR LoginFormPage both work)
+import LoginFormComponent from './login-form';
 
 export const metadata: Metadata = {
   title: 'Sign In',
-  description: 'Sign in to AethLife — your AI fitness, expense, and habit tracker. Access your dashboard, AI insights, and personalized reports.',
+  description: 'Sign in to AethLife — your AI fitness, expense, and habit tracker.',
   alternates: { canonical: 'https://aethlife.vercel.app/auth/login' },
-  openGraph: {
-    title: 'Sign In to AethLife',
-    description: 'Sign in to track your fitness, expenses, and habits with AI-powered insights.',
-  },
 };
 
 export default function LoginPage() {
-  return <LoginForm />;
+  return <LoginFormComponent />;
 }

@@ -204,3 +204,5 @@ export function LoginForm() {
     </Suspense>
   );
 }
+
+export default LoginForm;

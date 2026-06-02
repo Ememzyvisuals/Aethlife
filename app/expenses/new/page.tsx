@@ -37,7 +37,7 @@ const FALLBACK_CATEGORIES = [
 
 const expenseSchema = z.object({
   amount: z.number({ invalid_type_error: 'Enter a valid amount' }).positive('Amount must be greater than 0'),
-  category_id: z.string().uuid('Select a category'),
+  category_id: z.string().min(1, 'Please select a category'),
   description: z.string().min(1, 'Description is required').max(200),
   merchant: z.string().max(100).optional(),
   date: z.string().min(1, 'Date is required'),
@@ -70,6 +70,11 @@ function NewExpenseContent() {
     resolver: zodResolver(expenseSchema),
     defaultValues: { date: format(new Date(), 'yyyy-MM-dd') },
   });
+
+  // Set fallback categories immediately so form is never empty
+  useEffect(() => {
+    setCategories(FALLBACK_CATEGORIES as unknown as ExpenseCategory[]);
+  }, []);
 
   useEffect(() => {
     async function loadCategories() {
@@ -338,7 +343,7 @@ function NewExpenseContent() {
                 <option value="">Select category</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
-                    {cat.icon} {cat.name}
+                    {cat.name}
                   </option>
                 ))}
               </select>

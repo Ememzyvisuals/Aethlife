@@ -4,6 +4,9 @@ import { DashboardContent } from '@/components/dashboard/dashboard-content';
 import { trackDailyActive } from '@/lib/utils/analytics';
 import { format, startOfMonth, endOfMonth, startOfWeek } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
+
 export const metadata = { title: 'Dashboard' };
 
 
@@ -75,7 +78,24 @@ export default async function DashboardPage() {
   ]);
 
   const monthlyTotal = monthExpenses?.reduce((s, e) => s + Number(e.amount), 0) ?? 0;
-  const budgetUsed = currentBudget ? Math.min(Math.round((monthlyTotal / Number(currentBudget.total_income)) * 100), 100) : 0;
+
+  // Currency conversion — convert stored amounts to user's display currency
+  const displayCurrency  = (profile?.currency ?? 'NGN') as string;
+  const budgetCurrency   = (currentBudget?.currency ?? 'NGN') as string;
+
+  // Convert monthly total from stored currency to display currency
+  const convertedMonthlyTotal = convertAmount(monthlyTotal, budgetCurrency, displayCurrency);
+
+  // Convert income for budget percentage (use same currency basis)
+  const incomeInDisplay = convertAmount(
+    Number(currentBudget?.total_income ?? 0),
+    budgetCurrency,
+    displayCurrency
+  );
+
+  const budgetUsed = incomeInDisplay > 0
+    ? Math.min(Math.round((convertedMonthlyTotal / incomeInDisplay) * 100), 100)
+    : 0;
   const completedHabits = todayHabitLogs?.length ?? 0;
   const totalHabits = activeHabits?.length ?? 0;
   const bestStreak = topStreakHabits?.[0]?.streak_count ?? 0;
@@ -92,7 +112,9 @@ export default async function DashboardPage() {
     const d = new Date(weekStart); d.setDate(d.getDate() + i);
     const ds = format(d, 'yyyy-MM-dd');
     const de = weeklyExpenses?.filter((e) => e.date === ds) ?? [];
-    return { day, amount: de.reduce((s, e) => s + Number(e.amount), 0) };
+    const rawAmount = de.reduce((s, e) => s + Number(e.amount), 0);
+    // Convert chart amounts to display currency too
+    return { day, amount: convertAmount(rawAmount, budgetCurrency, displayCurrency) };
   });
 
   return (
@@ -101,8 +123,9 @@ export default async function DashboardPage() {
       todayWorkoutsCount={todayWorkouts?.length ?? 0}
       todayExpensesCount={todayExpenses?.length ?? 0}
       todaySteps={todaySteps?.steps ?? 0}
-      monthlyExpenseTotal={monthlyTotal}
+      monthlyExpenseTotal={convertedMonthlyTotal}
       budgetUsedPercent={budgetUsed}
+      displayCurrency={displayCurrency}
       activeHabitsToday={totalHabits}
       completedHabitsToday={completedHabits}
       pendingInsights={unreadInsights ?? 0}

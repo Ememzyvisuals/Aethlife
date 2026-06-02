@@ -4,6 +4,31 @@ import Link from 'next/link';
 import { ExpensesContent } from '@/components/expenses/expenses-content';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 
+// Currency conversion utilities
+const RATES: Record<string, Record<string, number>> = {
+  NGN: { USD: 0.00065, EUR: 0.00060, GBP: 0.00051, NGN: 1 },
+  USD: { NGN: 1540,    EUR: 0.92,    GBP: 0.79,    USD: 1 },
+  EUR: { NGN: 1673,    USD: 1.09,    GBP: 0.86,    EUR: 1 },
+  GBP: { NGN: 1950,    USD: 1.27,    EUR: 1.16,    GBP: 1 },
+};
+
+function convertAmt(amount: number, from: string, to: string): number {
+  if (from === to) return amount;
+  return amount * (RATES[from]?.[to] ?? 1);
+}
+
+function fmtCurrency(amount: number, currency: string): string {
+  const symbols: Record<string, string> = { NGN: '₦', USD: '$', EUR: '€', GBP: '£' };
+  const sym = symbols[currency] ?? currency + ' ';
+  if (currency === 'NGN') return sym + Math.round(amount).toLocaleString('en-NG');
+  return sym + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+
+
+export const dynamic = 'force-dynamic';
+
+
 export default async function ExpensesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

@@ -27,6 +27,7 @@ interface DashboardContentProps {
   weeklyWorkoutData: WeeklyWorkoutData[];
   weeklyExpenseData: WeeklyExpenseData[];
   streakData: StreakData[];
+  displayCurrency?: string; // passed from server after conversion
 }
 
 function StatCard({ index, icon: Icon, bg, accent, label, value, sub, href }: {
@@ -67,7 +68,8 @@ export function DashboardContent({
   weeklyExpenseData,
   streakData,
 }: DashboardContentProps) {
-  const currency = profile?.currency ?? 'NGN';
+  // Use server-converted displayCurrency if provided, fallback to profile currency
+  const currency = displayCurrency ?? profile?.currency ?? 'NGN';
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';

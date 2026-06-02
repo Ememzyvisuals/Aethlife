@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
+
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 function FitnessSkeleton() {
   return (

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Logo } from '@/components/shared/logo';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ export default function TermsPage() {
               <defs><linearGradient id="teal-terms" x1="8" y1="8" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#2dd4bf"/><stop offset="100%" stopColor="#0d9488"/></linearGradient></defs>
             </svg>
           </div>
-          <span className="font-sans font-semibold text-foreground">AethLife</span>
+          <Logo wordmarkSize="sm" />
         </Link>
       </header>
 

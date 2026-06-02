@@ -232,25 +232,25 @@ function BillingContent() {
       const data = await res.json();
 
       if (!res.ok) {
-        // Error — reset loading so user can try again
-        toast.error(data.error ?? 'Could not initiate payment. Please try again.');
+        const errMsg = data.error ?? `Payment error (${res.status}). Please try again.`;
+        toast.error(errMsg);
+        console.error('[AethLife] Checkout error:', res.status, data);
         setLoading(false);
         return;
       }
 
       if (!data.checkoutUrl) {
-        toast.error('No payment URL received. Please try again.');
+        toast.error('Payment URL missing. Check Vercel function logs.');
+        console.error('[AethLife] Missing checkoutUrl in response:', data);
         setLoading(false);
         return;
       }
 
-      // SUCCESS — show toast then redirect
-      // Do NOT call setLoading(false) here — keep spinner showing during redirect
-      // Calling it would trigger a React re-render that can cancel window.location navigation
-      toast.success('Redirecting to payment page…');
-      setTimeout(() => {
-        window.location.href = data.checkoutUrl;
-      }, 600);
+      // SUCCESS — navigate immediately inside the click handler
+      // MUST be synchronous — setTimeout breaks mobile browser user-gesture chain
+      // and causes navigation to be blocked as a popup
+      const url = data.checkoutUrl as string;
+      window.location.href = url;
 
     } catch {
       toast.error('Network error. Please check your connection and try again.');

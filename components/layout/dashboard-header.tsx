@@ -41,11 +41,11 @@ export function DashboardHeader({ profile }: { profile: Profile | null }) {
 
   async function handleSignOut() {
     setMenuOpen(false);
-    await supabase.auth.signOut();
-    // Hard redirect — router.push can race with session clearing
-    // window.location.href forces a full page reload so middleware
-    // sees the cleared session and routes correctly
-    window.location.href = '/auth/login';
+    // POST to server-side signout route — clears session cookie
+    // server-side before any redirect, so middleware never sees
+    // a stale authenticated session
+    await fetch('/api/auth/signout', { method: 'POST' });
+    window.location.href = '/';
   }
 
   return (

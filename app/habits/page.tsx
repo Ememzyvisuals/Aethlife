@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import { HabitsContent } from '@/components/habits/habits-content';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
+
 export default async function HabitsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

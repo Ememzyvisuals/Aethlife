@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { InsightsContent } from '@/components/insights/insights-content';
 
+export const dynamic = 'force-dynamic';
+
+
 export const metadata = { title: 'AI Insights' };
 
 export default async function InsightsPage() {

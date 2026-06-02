@@ -12,6 +12,9 @@ import { useTheme } from 'next-themes';
 import { CURRENCY_NAMES } from '@/lib/pricing';
 import type { Currency, NotificationPreferences } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
+
 const profileSchema = z.object({
   full_name: z.string().min(2).max(80),
   timezone: z.string(),
