@@ -18,7 +18,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 // ── Inner component — uses useSearchParams so must be inside <Suspense> ──────
-function LoginForm() {
+function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || '/dashboard';
@@ -90,7 +90,7 @@ function LoginForm() {
         type="button"
         onClick={signInWithGoogle}
         disabled={isGoogleLoading}
-        className="w-full flex items-center justify-center gap-3 border border-border rounded-xl px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-all disabled:opacity-60 disabled:cursor-not-allowed mb-6"
+        className="w-full flex items-center justify-center gap-3 border border-border rounded-xl px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-all disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isGoogleLoading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -123,7 +123,7 @@ function LoginForm() {
             autoComplete="email"
             placeholder="you@example.com"
             {...register('email')}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50"
           />
           {errors.email && (
             <p className="text-xs text-destructive mt-1.5">{errors.email.message}</p>
@@ -146,7 +146,7 @@ function LoginForm() {
               autoComplete="current-password"
               placeholder="••••••••"
               {...register('password')}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all pr-10"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50"
             />
             <button
               type="button"
@@ -164,7 +164,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm mt-2"
+          className="w-full flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -187,8 +187,8 @@ function LoginForm() {
   );
 }
 
-// ── Page export — wraps LoginForm in Suspense (required for useSearchParams) ──
-export function Loginpage() {
+// ── Page export — wraps LoginFormContent in Suspense (required for useSearchParams) ──
+export default function LoginForm() {
   return (
     <Suspense fallback={
       <div className="animate-pulse space-y-4">
@@ -200,8 +200,7 @@ export function Loginpage() {
         <div className="h-12 bg-muted rounded-xl" />
       </div>
     }>
-      <LoginForm />
+      <LoginFormContent />
     </Suspense>
   );
 }
-
