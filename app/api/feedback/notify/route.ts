@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendFeedbackNotification } from '@/lib/email/templates';
 
 export async function POST(request: NextRequest) {
   try {
